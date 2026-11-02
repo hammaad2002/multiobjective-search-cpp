@@ -3,6 +3,8 @@
 // reproduce Martins' Pareto front exactly on larger random graphs.
 #include <gtest/gtest.h>
 
+#include <cstdio>
+#include <cstdlib>
 #include <random>
 #include <string>
 
@@ -13,6 +15,13 @@
 
 namespace mosp {
 namespace {
+
+// Set MOSP_STRESS=<n> to run n times as many random instances.
+std::uint64_t stress_factor() {
+  const char* env = std::getenv("MOSP_STRESS");
+  const long v = env != nullptr ? std::strtol(env, nullptr, 10) : 1;
+  return v > 0 ? static_cast<std::uint64_t>(v) : 1;
+}
 
 test::RandomGraphParams params_for_seed(std::uint64_t seed, NodeId min_nodes, NodeId max_nodes) {
   std::mt19937_64 rng(seed * 0x9E3779B97F4A7C15ULL + 7);
@@ -27,6 +36,7 @@ test::RandomGraphParams params_for_seed(std::uint64_t seed, NodeId min_nodes, No
 
 template <std::size_t K>
 void martins_vs_brute_force(std::uint64_t first_seed, std::uint64_t num_seeds) {
+  num_seeds *= stress_factor();
   std::size_t nonempty = 0;
   for (std::uint64_t seed = first_seed; seed < first_seed + num_seeds; ++seed) {
     const auto p = params_for_seed(seed, 2, 8);
@@ -48,6 +58,7 @@ TEST(Random, MartinsMatchesBruteForceK3) { martins_vs_brute_force<3>(5001, 1000)
 
 template <std::size_t K>
 void solvers_vs_martins(std::uint64_t first_seed, std::uint64_t num_seeds) {
+  num_seeds *= stress_factor();
   const auto solvers = test::all_solvers<K>();
   std::size_t max_front = 0;
   for (std::uint64_t seed = first_seed; seed < first_seed + num_seeds; ++seed) {
@@ -68,10 +79,44 @@ void solvers_vs_martins(std::uint64_t first_seed, std::uint64_t num_seeds) {
   }
   // The instances must be non-trivial for the comparison to mean anything.
   EXPECT_GE(max_front, 5U);
+  std::printf("K=%zu: %llu instances, largest Pareto front %zu\n", K,
+              static_cast<unsigned long long>(num_seeds), max_front);
 }
 
 TEST(Random, AllSolversMatchMartinsK2) { solvers_vs_martins<2>(10001, 500); }
 TEST(Random, AllSolversMatchMartinsK3) { solvers_vs_martins<3>(20001, 500); }
+
+// Larger instances with much bigger fronts: random grids with conflicting
+// costs, start and goal in opposite corners.
+template <std::size_t K>
+void solvers_vs_martins_on_grids(std::uint64_t first_seed, std::uint64_t num_seeds, NodeId side) {
+  num_seeds *= stress_factor();
+  const auto solvers = test::all_solvers<K>();
+  std::size_t max_front = 0;
+  for (std::uint64_t seed = first_seed; seed < first_seed + num_seeds; ++seed) {
+    const NodeId rows = side - static_cast<NodeId>(seed % 3);
+    const NodeId cols = side + static_cast<NodeId>(seed % 4);
+    const Graph g = test::random_grid<K>(seed, rows, cols, (seed % 2 == 0) ? 10 : 100);
+    const NodeId s = 0;
+    const NodeId t = rows * cols - 1;
+    const auto reference = martins<K>(g, s, t).front();
+    max_front = std::max(max_front, reference.size());
+    for (const auto& solver : solvers) {
+      if (solver.name == "martins") continue;
+      const std::string ctx =
+          solver.name + " grid K=" + std::to_string(K) + " seed=" + std::to_string(seed);
+      const SearchResult<K> r = solver.run(g, s, t);
+      test::check_result_structure<K>(g, s, t, r, ctx);
+      ASSERT_EQ(r.front(), reference) << ctx;
+    }
+  }
+  EXPECT_GE(max_front, 20U);
+  std::printf("grid K=%zu: %llu instances, largest Pareto front %zu\n", K,
+              static_cast<unsigned long long>(num_seeds), max_front);
+}
+
+TEST(Random, AllSolversMatchMartinsOnGridsK2) { solvers_vs_martins_on_grids<2>(30001, 40, 14); }
+TEST(Random, AllSolversMatchMartinsOnGridsK3) { solvers_vs_martins_on_grids<3>(40001, 30, 10); }
 
 }  // namespace
 }  // namespace mosp

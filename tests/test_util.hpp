@@ -69,4 +69,44 @@ Graph random_graph(std::uint64_t seed, const RandomGraphParams& p) {
   return Graph::from_arcs(p.num_nodes, static_cast<unsigned>(K), tails, heads, costs);
 }
 
+// Bidirectional 4-neighbour grid (rows x cols) with random, conflicting arc
+// costs: objective 0 uniform in [1, max_cost], objective 1 roughly
+// max_cost + 1 - c0 plus noise, further objectives independent. Grids with
+// conflicting costs give the large Pareto fronts typical of road networks.
+template <std::size_t K>
+Graph random_grid(std::uint64_t seed, NodeId rows, NodeId cols, Cost max_cost) {
+  std::mt19937_64 rng(seed);
+  std::uniform_int_distribution<Cost> cost(1, max_cost);
+  std::uniform_int_distribution<int> noise(-static_cast<int>(max_cost) / 5,
+                                           static_cast<int>(max_cost) / 5);
+  std::vector<NodeId> tails;
+  std::vector<NodeId> heads;
+  std::vector<Cost> costs;
+  auto add_arc = [&](NodeId u, NodeId v) {
+    tails.push_back(u);
+    heads.push_back(v);
+    const Cost c0 = cost(rng);
+    costs.push_back(c0);
+    if constexpr (K >= 2) {
+      const int c1 = static_cast<int>(max_cost) + 1 - static_cast<int>(c0) + noise(rng);
+      costs.push_back(static_cast<Cost>(std::clamp(c1, 1, static_cast<int>(max_cost))));
+    }
+    for (std::size_t j = 2; j < K; ++j) costs.push_back(cost(rng));
+  };
+  for (NodeId r = 0; r < rows; ++r) {
+    for (NodeId c = 0; c < cols; ++c) {
+      const NodeId u = r * cols + c;
+      if (c + 1 < cols) {
+        add_arc(u, u + 1);
+        add_arc(u + 1, u);
+      }
+      if (r + 1 < rows) {
+        add_arc(u, u + cols);
+        add_arc(u + cols, u);
+      }
+    }
+  }
+  return Graph::from_arcs(rows * cols, static_cast<unsigned>(K), tails, heads, costs);
+}
+
 }  // namespace mosp::test
