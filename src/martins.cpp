@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "mosp/dimacs.hpp"
 #include "mosp/open_list.hpp"
 
 namespace mosp {
@@ -14,6 +15,7 @@ SearchResult<K> martins(const Graph& graph, NodeId source, NodeId target,
   if (source >= graph.num_nodes() || target >= graph.num_nodes()) {
     throw std::out_of_range("martins: node out of range");
   }
+  check_cost_range(graph);
 
   struct Label {
     NodeId state;

@@ -43,9 +43,11 @@ struct DimacsCoords {
 [[nodiscard]] Graph combine_objectives(std::span<const DimacsGraph* const> objectives,
                                        bool add_hop_objective);
 
-// Throws std::overflow_error if path costs could overflow Cost. Search
-// algorithms add a path cost and a heuristic value, each bounded by the total
-// arc cost of the objective, so we require 2 * total < kInfCost per objective.
+// Throws std::overflow_error unless, for every objective, the sum of all arc
+// costs is below kInfCost. Every label the searches keep is a simple path
+// (a path that revisits a state is always pruned, as its cost is weakly
+// dominated by its own prefix), so this sum bounds every g-value. The
+// heuristic adds a second term; see check_heuristic_range in heuristic.hpp.
 void check_cost_range(const Graph& graph);
 
 // Loads a DIMACS USA road network from data_dir:

@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <functional>
 #include <string>
 #include <vector>
@@ -61,6 +62,11 @@ void check_result_structure(const Graph& g, NodeId s, NodeId t, const SearchResu
     ASSERT_EQ(p.front(), s) << context;
     ASSERT_EQ(p.back(), t) << context;
     ASSERT_TRUE(path_has_cost(g, p, sols[i].cost)) << context << ": path cost mismatch";
+    // Stored labels are simple paths (the 32-bit overflow guard relies on it).
+    std::vector<NodeId> sorted = p;
+    std::sort(sorted.begin(), sorted.end());
+    ASSERT_EQ(std::adjacent_find(sorted.begin(), sorted.end()), sorted.end())
+        << context << ": solution path revisits a node";
   }
 }
 

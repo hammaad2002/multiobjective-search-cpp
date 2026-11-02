@@ -13,6 +13,7 @@
 // the cost-unique Pareto-optimal solution set.
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include "mosp/graph.hpp"
@@ -42,6 +43,7 @@ class BoaStar {
   };
 
   const Graph* graph_;
+  std::vector<std::uint64_t> totals_;  // per-objective total arc cost
   std::vector<Cost> g2_min_;
   std::vector<Node> nodes_;
   BinaryHeap<CostVec<2>> open_;

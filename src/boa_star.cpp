@@ -11,6 +11,7 @@ namespace mosp {
 BoaStar::BoaStar(const Graph& graph) : graph_(&graph), g2_min_(graph.num_nodes(), kInfCost) {
   if (graph.num_objectives() != 2) throw std::invalid_argument("BOA* needs exactly 2 objectives");
   check_cost_range(graph);
+  totals_ = total_costs(graph);
 }
 
 SearchResult<2> BoaStar::search(NodeId start, NodeId goal, const std::vector<CostVec<2>>& h,
@@ -20,6 +21,7 @@ SearchResult<2> BoaStar::search(NodeId start, NodeId goal, const std::vector<Cos
     throw std::out_of_range("BOA*: node out of range");
   }
   if (h.size() != graph.num_nodes()) throw std::invalid_argument("BOA*: heuristic size mismatch");
+  check_heuristic_range<2>(totals_, h);
 
   SearchResult<2> result;
   const Deadline deadline(options.timeout_seconds);

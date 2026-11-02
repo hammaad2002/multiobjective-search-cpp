@@ -39,4 +39,10 @@ const std::vector<Cost>& Dijkstra::run(NodeId source, unsigned objective) {
   return dist_;
 }
 
+std::vector<std::uint64_t> total_costs(const Graph& graph) {
+  std::vector<std::uint64_t> totals(graph.num_objectives());
+  for (unsigned i = 0; i < graph.num_objectives(); ++i) totals[i] = graph.total_cost(i);
+  return totals;
+}
+
 }  // namespace mosp

@@ -71,6 +71,7 @@ class NamoaDr {
   void unlink_open(std::uint32_t id);
 
   const Graph* graph_;
+  std::vector<std::uint64_t> totals_;   // per-objective total arc cost
   std::vector<std::uint32_t> op_head_;  // G_op(s) list heads
   std::vector<std::uint32_t> cl_head_;  // G_cl(s) list heads (K > 2)
   std::vector<Cost> g2_min_;            // G_cl(s) for K == 2

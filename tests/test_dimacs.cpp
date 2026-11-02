@@ -123,9 +123,14 @@ TEST(Graph, RejectsDifferentArcSets) {
 }
 
 TEST(Graph, CostRangeGuard) {
-  const DimacsGraph big = parse_gr("p sp 2 2\na 1 2 3000000000\na 2 1 5\n");
+  // Total arc cost 5e9 does not fit in 32 bits.
+  const DimacsGraph big = parse_gr("p sp 2 2\na 1 2 3000000000\na 2 1 2000000000\n");
   const DimacsGraph* parts[] = {&big};
   EXPECT_THROW(check_cost_range(combine_objectives(parts, false)), std::overflow_error);
+  // Total 3e9 fits on its own.
+  const DimacsGraph fits = parse_gr("p sp 2 2\na 1 2 3000000000\na 2 1 5\n");
+  const DimacsGraph* fits_parts[] = {&fits};
+  EXPECT_NO_THROW(check_cost_range(combine_objectives(fits_parts, false)));
   const DimacsGraph d = parse_gr(kDist);
   const DimacsGraph* ok[] = {&d};
   EXPECT_NO_THROW(check_cost_range(combine_objectives(ok, false)));

@@ -16,6 +16,7 @@ NamoaDr<K>::NamoaDr(const Graph& graph)
     throw std::invalid_argument("NAMOA*dr: graph objective count does not match K");
   }
   check_cost_range(graph);
+  totals_ = total_costs(graph);
   if constexpr (K == 2) {
     g2_min_.assign(graph.num_nodes(), kInfCost);
   } else {
@@ -80,6 +81,7 @@ SearchResult<K> NamoaDr<K>::search(NodeId start, NodeId goal, const std::vector<
   if (h.size() != graph.num_nodes()) {
     throw std::invalid_argument("NAMOA*dr: heuristic size mismatch");
   }
+  check_heuristic_range<K>(totals_, h);
 
   SearchResult<K> result;
   const Deadline deadline(options.timeout_seconds);

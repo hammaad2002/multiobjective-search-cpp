@@ -229,7 +229,7 @@ Graph combine_objectives(std::span<const DimacsGraph* const> objectives, bool ad
 void check_cost_range(const Graph& graph) {
   for (unsigned j = 0; j < graph.num_objectives(); ++j) {
     const std::uint64_t total = graph.total_cost(j);
-    if (2 * total >= kInfCost) {
+    if (total >= kInfCost) {
       throw std::overflow_error("objective " + std::to_string(j) + ": total arc cost " +
                                 std::to_string(total) + " is too large for 32-bit path costs");
     }

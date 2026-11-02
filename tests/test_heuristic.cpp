@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <stdexcept>
 #include <vector>
 
 #include "mosp/heuristic.hpp"
@@ -69,6 +70,20 @@ TEST(Heuristic, MatchesForwardDijkstraAndIsConsistent) {
       }
     }
   }
+}
+
+
+// g is bounded by the total arc cost (3e9 here) and h(0) = 3e9 towards goal 1,
+// so g + h could reach 6e9 and the searches must refuse the query.
+TEST(Heuristic, RangeGuardRejectsOverflowingQueries) {
+  const Graph g = test::make_graph<2>(2, {{0, 1, {3000000000u, 1}}, {1, 0, {5, 1}}});
+  const Graph r = g.reversed();
+  Dijkstra bwd(r);
+  std::vector<CostVec<2>> h;
+  compute_heuristic<2>(bwd, 1, g.num_nodes(), h);
+  EXPECT_THROW(check_heuristic_range<2>(total_costs(g), h), std::overflow_error);
+  compute_heuristic<2>(bwd, 0, g.num_nodes(), h);  // h(1) = 5: fine
+  EXPECT_NO_THROW(check_heuristic_range<2>(total_costs(g), h));
 }
 
 }  // namespace
