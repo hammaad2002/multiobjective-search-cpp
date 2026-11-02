@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "brute_force.hpp"
+#include "mosp/boa_star.hpp"
 #include "mosp/graph.hpp"
 #include "mosp/martins.hpp"
 #include "mosp/search.hpp"
@@ -27,6 +28,11 @@ std::vector<NamedSolver<K>> all_solvers() {
   solvers.push_back({"martins", [](const Graph& g, NodeId s, NodeId t) {
                        return martins<K>(g, s, t);
                      }});
+  if constexpr (K == 2) {
+    solvers.push_back({"boa*", [](const Graph& g, NodeId s, NodeId t) {
+                         return boa_star(g, s, t);
+                       }});
+  }
   return solvers;
 }
 

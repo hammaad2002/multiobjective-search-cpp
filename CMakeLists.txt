@@ -29,6 +29,7 @@ add_library(mosp
   src/graph.cpp
   src/heuristic.cpp
   src/martins.cpp
+  src/boa_star.cpp
 )
 target_include_directories(mosp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
