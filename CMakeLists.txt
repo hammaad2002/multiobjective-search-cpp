@@ -34,6 +34,9 @@ add_library(mosp
 )
 target_include_directories(mosp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+add_executable(mosp_bench apps/mosp_bench.cpp)
+target_link_libraries(mosp_bench PRIVATE mosp)
+
 if(MOSP_BUILD_TESTS)
   include(FetchContent)
   FetchContent_Declare(
