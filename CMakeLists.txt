@@ -28,6 +28,7 @@ add_library(mosp
   src/dimacs.cpp
   src/graph.cpp
   src/heuristic.cpp
+  src/martins.cpp
 )
 target_include_directories(mosp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -47,6 +48,8 @@ if(MOSP_BUILD_TESTS)
   add_executable(mosp_tests
     tests/test_dimacs.cpp
     tests/test_heuristic.cpp
+    tests/test_tiny.cpp
+    tests/test_random.cpp
   )
   target_link_libraries(mosp_tests PRIVATE mosp GTest::gtest_main)
   include(GoogleTest)
