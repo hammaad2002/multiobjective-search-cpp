@@ -30,6 +30,7 @@ add_library(mosp
   src/heuristic.cpp
   src/martins.cpp
   src/boa_star.cpp
+  src/namoa_dr.cpp
 )
 target_include_directories(mosp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

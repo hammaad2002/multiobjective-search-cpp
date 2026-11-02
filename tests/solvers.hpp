@@ -12,6 +12,7 @@
 #include "mosp/boa_star.hpp"
 #include "mosp/graph.hpp"
 #include "mosp/martins.hpp"
+#include "mosp/namoa_dr.hpp"
 #include "mosp/search.hpp"
 
 namespace mosp::test {
@@ -27,6 +28,9 @@ std::vector<NamedSolver<K>> all_solvers() {
   std::vector<NamedSolver<K>> solvers;
   solvers.push_back({"martins", [](const Graph& g, NodeId s, NodeId t) {
                        return martins<K>(g, s, t);
+                     }});
+  solvers.push_back({"namoa*dr", [](const Graph& g, NodeId s, NodeId t) {
+                       return namoa_dr<K>(g, s, t);
                      }});
   if constexpr (K == 2) {
     solvers.push_back({"boa*", [](const Graph& g, NodeId s, NodeId t) {
