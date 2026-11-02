@@ -9,11 +9,16 @@
 # (USA-road-d.<MAP>.co; one file shared by both graphs) from the official
 # challenge site, http://www.diag.uniroma1.it/challenge9/download.shtml.
 # Set DIMACS_BASE_URL to use a different location with the same layout.
+#
+# If the site is unreachable, place the files (optionally .gz-compressed)
+# in data/ by hand and re-run this script: it unpacks them and checks them
+# against the SHA-256 sums in scripts/dimacs.sha256.
 set -euo pipefail
 
 BASE_URL="${DIMACS_BASE_URL:-http://www.diag.uniroma1.it/challenge9/data}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_DIR="${DATA_DIR:-$ROOT/data}"
+CHECKSUMS="$ROOT/scripts/dimacs.sha256"
 MAPS=("$@")
 if [ ${#MAPS[@]} -eq 0 ]; then MAPS=(NY BAY); fi
 
@@ -26,6 +31,12 @@ fetch() {  # fetch <remote path relative to BASE_URL> <local file name>
   local url="$BASE_URL/$1" out="$DATA_DIR/$2"
   if [ -s "$out" ]; then
     echo "  $2 already present"
+    return
+  fi
+  if [ -s "$out.gz" ]; then
+    echo "  unpacking local $2.gz"
+    gunzip -c "$out.gz" > "$out.part"
+    mv "$out.part" "$out"
     return
   fi
   echo "  downloading $url"
@@ -66,5 +77,14 @@ for map in "${MAPS[@]}"; do
     echo "error: $map has nodes/arcs '$d_header', expected '${EXPECTED[$map]}'" >&2
     exit 1
   fi
-  echo "  ok: ${d_header% *} nodes, ${d_header#* } arcs"
+  for f in "USA-road-d.$map.gr" "USA-road-t.$map.gr" "USA-road-d.$map.co"; do
+    expected="$(awk -v f="$f" '$2 == f { print $1 }' "$CHECKSUMS" 2>/dev/null || true)"
+    [ -z "$expected" ] && continue
+    actual="$(sha256sum "$DATA_DIR/$f" | cut -d' ' -f1)"
+    if [ "$actual" != "$expected" ]; then
+      echo "error: $f does not match its SHA-256 in scripts/dimacs.sha256" >&2
+      exit 1
+    fi
+  done
+  echo "  ok: ${d_header% *} nodes, ${d_header#* } arcs, checksums match"
 done
