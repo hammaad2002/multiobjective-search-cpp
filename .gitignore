@@ -1,0 +1,17 @@
+# Build trees
+build/
+build-*/
+cmake-build-*/
+
+# DIMACS road networks (downloaded by scripts/download_data.sh, never committed)
+data/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Editors
+.vscode/
+.idea/
+*.swp
