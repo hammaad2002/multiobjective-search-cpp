@@ -83,7 +83,7 @@ def summary_table(groups) -> list[str]:
             rt = [r["runtime_ms"] for r in ok]
             ex = statistics.mean(r["expansions"] for r in ok)
             ge = statistics.mean(r["generated"] for r in ok)
-            front = f"{fmt(statistics.mean(fr))} / {fmt(statistics.median(fr))} / {max(fr)}"
+            front = f"{fmt(statistics.mean(fr))} / {fmt(statistics.median(fr))} / {max(fr):,}"
             runtime = (f"{fmt(statistics.mean(rt), 2)} / {fmt(statistics.median(rt), 2)} / "
                        f"{fmt(max(rt), 2)}")
             exs, ges = fmt(ex, 0), fmt(ge, 0)
@@ -197,9 +197,9 @@ def plot_runtime_vs_front(index, maps, path):
                            zorder=3)
         if timeout_s:
             ax.axhline(timeout_s * 1000, color=TEXT_SECONDARY, linestyle="--", linewidth=1)
-            ax.annotate(f"timeout {timeout_s:g} s", xy=(1.0, timeout_s * 1000),
-                        xycoords=("axes fraction", "data"), xytext=(-4, 4),
-                        textcoords="offset points", ha="right", fontsize=8, color=TEXT_SECONDARY)
+            ax.annotate(f"timeout {timeout_s:g} s", xy=(0.0, timeout_s * 1000),
+                        xycoords=("axes fraction", "data"), xytext=(4, 4),
+                        textcoords="offset points", ha="left", fontsize=8, color=TEXT_SECONDARY)
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("Pareto front size (solutions)", color=TEXT, fontsize=10)

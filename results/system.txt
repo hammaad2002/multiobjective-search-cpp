@@ -1,0 +1,8 @@
+date: 2026-11-02T11:05:06Z
+cpu: 12th Gen Intel(R) Core(TM) i7-12700
+kernel: Linux 6.8.0-40-generic
+compiler: c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+build flags: CMAKE_BUILD_TYPE:STRING=Release CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG CMAKE_CXX_FLAGS_RELEASE-ADVANCED:INTERNAL=1 
+march=native: ON
+git commit: c109fe5
+queries: 50, timeout: 60s, seed: 1
