@@ -20,7 +20,7 @@ jobs:
             build_type: Debug
             extra: "-DMOSP_SANITIZE=ON"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DMOSP_NATIVE=OFF ${{ matrix.extra }}
       - name: Build
